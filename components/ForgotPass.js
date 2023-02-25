@@ -10,8 +10,11 @@ export default ForgotPass = ({navigation}) => {
                 <Text style={styles.forgotpass}>
                 Forgot Password?
                 </Text>
+                {/* <Text style={styles.forgotpasstxt}>
+                Don't worry! it occurs. 
+                </Text> */}
                 <Text style={styles.forgotpasstxt}>
-                Don't worry! it occurs. Please enter the phone number linked with your account.
+                Please enter the phone number linked with your account.
                 </Text>
 
             </View>
@@ -66,6 +69,7 @@ const styles = StyleSheet.create({
         paddingLeft: 20,
         backgroundColor: colors.grey,
         margin: 15,
+        // marginTop: 25,
         height: 50,
         borderRadius: 8,
         borderColor: '#DADADA',

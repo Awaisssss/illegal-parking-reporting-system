@@ -6,11 +6,20 @@ import 'expo-dev-client';
 import "firebase/compat/firestore";
 import firebase from 'firebase/compat/app';
 
+import {useRef} from 'react';
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+
 
 export default Login = ({navigation}) => {
 
-    const [phone, setPhone] = useState('')
+    // const [phone, setPhone] = useState('')
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('')
+    const [code, setCode] = useState('');
+    const [verificationId, setVerificationId] = useState(null);
+    const recaptchaVerifier = useRef(null);
+    // const sendVerification = () => { ... };
+    // const confirmCode = () => { ... };
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -60,6 +69,27 @@ export default Login = ({navigation}) => {
             })
     }
 
+    const sendVerification = () => {
+        const phoneProvider = new firebase.auth.PhoneAuthProvider();
+        phoneProvider
+          .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+          .then(setVerificationId);
+      };
+
+      const confirmCode = () => {
+        const credential = firebase.auth.PhoneAuthProvider.credential(
+          verificationId,
+          code
+        );
+        firebase
+          .auth()
+          .signInWithCredential(credential)
+          .then((result) => {
+            // Do something with the results here
+            console.log(result);
+          });
+      }
+
     return (
         // <ScrollView>
         // <KeyboardAvoidingView style={styles.container}> 
@@ -77,18 +107,25 @@ export default Login = ({navigation}) => {
         <View style={styles.inputContainer}>
             <View style={styles.input}>
                 <TextInput placeholder='Please enter your email address' 
-                value={ phone } keyboardType="email-address"
-                onChangeText={text => setPhone(text)} 
-                autoCapitalize="none"
+                // value={ phone } keyboardType="email-address"
+                // onChangeText={text => setPhone(text)} 
+                // autoCapitalize="none"
+                onChangeText={setPhoneNumber}
+                keyboardType="phone-pad"
+                autoCompleteType="tel"
                 // keyboardType='number-pad' 
                 ></TextInput>
             </View>
 
             <View style={styles.input}>
                 <TextInput placeholder='Please enter your password'
-                value={ password } 
-                onChangeText={text => setPassword(text)} 
-                secureTextEntry ></TextInput>
+                // value={ password } 
+                // onChangeText={text => setPassword(text)} 
+                // secureTextEntry 
+                onChangeText={setCode}
+                keyboardType="number-pad"
+                >
+                </TextInput>
             </View>
         </View>
 
@@ -96,12 +133,31 @@ export default Login = ({navigation}) => {
             <Text onPress={() => navigation.navigate('ForgotPass')}>Forgot password?</Text>
         </View>
 
-        <TouchableOpacity style={styles.loginBtn} 
+        {/* <TouchableOpacity style={styles.loginBtn} 
         // onPress={() => navigation.navigate('Home')}
         // onPress={handleLogin}
         onPress={onLoginPress}
         >
         <Text style={styles.loginBtntxt}>Login</Text>
+        </TouchableOpacity>
+         */}
+
+        <TouchableOpacity style={styles.loginBtn} 
+        // onPress={() => navigation.navigate('Home')}
+        // onPress={handleLogin}
+        onPress={sendVerification}
+        >
+        <Text style={styles.loginBtntxt}>sendVerification</Text>
+        </TouchableOpacity>
+
+        <FirebaseRecaptchaVerifierModal ref={recaptchaVerifier} firebaseConfig={firebase.app().options}/>
+
+        <TouchableOpacity style={styles.loginBtn} 
+        // onPress={() => navigation.navigate('Home')}
+        // onPress={handleLogin}
+        onPress={confirmCode}
+        >
+        <Text style={styles.loginBtntxt}>verifyOTP</Text>
         </TouchableOpacity>
         
             <View style={styles.footerW2}>
@@ -113,7 +169,8 @@ export default Login = ({navigation}) => {
             </View>
         </SafeAreaView>
         // </KeyboardAvoidingView>
-        // </ScrollView> 
+        // </ScrollView>
+         
     );
 };
 

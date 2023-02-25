@@ -16,6 +16,7 @@ import {getAuth} from 'firebase/auth'
 import { doc } from 'firebase/firestore';
 import { getDoc } from 'firebase/firestore';
 // import storage from '@react-native-firebase/storage';
+// import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
 Feather.loadFont();
@@ -29,7 +30,7 @@ export default Home = ({navigation}) => {
         // const reference = storage().ref('https://www.computerhope.com/jargon/j/jpg.png');
         
         // var user = firebase.auth().currentUser;
-        const auth = getAuth();
+        // const auth = getAuth();
         const user = auth.currentUser;
         let userId = user.uid;
         let [userData, setUserData] = useState({});
@@ -41,6 +42,9 @@ export default Home = ({navigation}) => {
             
             if (docSnap.exists()) {
                 console.log("Document data in HomeJs:", docSnap.data());
+                // user = FirebaseAuth.getInstance().getCurrentUser();
+                // phoneNumber = user.getPhoneNumber();
+                // email = user.getEmail();
                 // console.log("Document data in HomeJsadnsajds:", docSnap.firstName);
             } else {
                 // doc.data() will be undefined in this case
@@ -48,7 +52,16 @@ export default Home = ({navigation}) => {
                 console.log("No such document!");
             } 
         }
-        
+
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                console.log("USER LOGGED IN")
+                console.log(user)
+                console.log(user.phoneNumber)
+            } else {
+                // No user is signed in.
+                console.log("USER NOT LOGGED IN")
+            }});
         // getUserData();
 
         useEffect(() => {
@@ -57,14 +70,15 @@ export default Home = ({navigation}) => {
 
         var userkaname
         // console.log('above if', userkaname)
-        getName();
+        // getName();
         function getName(){
         if (userData){
             userkaname = userData.firstName;
-            console.log('nasdca', userkaname);
-            return userkaname;
+            phone = userData.phone
+            console.log('nasdca', phone);
+            return phone;
         };
-        }
+    }
         console.log('above if', userkaname)
 
     
@@ -72,8 +86,10 @@ export default Home = ({navigation}) => {
         // firstName = user.firstName;
         // lastName = user.lastName;
         // displayName = user.lastName;
-        email = user.email;
-        uid = user.id;  
+        // email = user.email;
+        // uid = user.id;  
+        // phone = user.phoneNumber
+        // console.log(phone)
     }
 
     // console.log('user credentials are:  ' + firstName, lastName, email, userId,)
@@ -93,7 +109,8 @@ export default Home = ({navigation}) => {
             <View style={styles.headerWrapper}>
                 <View style={styles.headerLeft}>
                     <FontAwesome5 style={styles.userLogo} name='user-circle' color={'white'} size={40} onPress={() => navigation.navigate('Profile')}/>
-                    <Text style={styles.userText} onPress={() => navigation.navigate('Profile')}>Welcome {userkaname} 
+                    <Text style={styles.userText} onPress={() => navigation.navigate('Profile')}>Welcome 
+                    {/* {userkaname}  */}
                     {/* {userData.firstName} */}
                     </Text>
                     <StatusBar style='light'/>

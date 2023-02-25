@@ -11,7 +11,7 @@ import {getAuth} from 'firebase/auth'
 import { doc } from 'firebase/firestore';
 import { getDoc } from 'firebase/firestore';
 import { app, db } from '../firebase'
-
+ 
 
 
 export default Profile = ({navigation}) => {
@@ -61,8 +61,8 @@ export default Profile = ({navigation}) => {
         <View style={styles.profileContainer}>
             <FontAwesome5 style={styles.userLogo} name='user-circle' color={'white'} size={80} />
             <View style={styles.textContainer}>
-                <Text style={styles.text1}>{userData.firstName} {userData.lastName}</Text>
-                <Text style={styles.text2}>{userData.email}</Text>
+                {/* <Text style={styles.text1}>{userData.firstName} {userData.lastName}</Text> */}
+                {/* <Text style={styles.text2}>{userData.email}</Text> */}
             </View>
             <MaterialIcons name='edit' size={26}  color={'white'} onPress={() => navigation.navigate('UpdateProfile')}/>
         </View>

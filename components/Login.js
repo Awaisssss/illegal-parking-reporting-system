@@ -15,11 +15,10 @@ export default Login = ({navigation}) => {
     // const [phone, setPhone] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('')
-    const [code, setCode] = useState('');
+    const [code, setCode] = useState();
     const [verificationId, setVerificationId] = useState(null);
     const recaptchaVerifier = useRef(null);
-    // const sendVerification = () => { ... };
-    // const confirmCode = () => { ... };
+    // const [inputFocused, setInputFocused] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -72,8 +71,9 @@ export default Login = ({navigation}) => {
     const sendVerification = () => {
         const phoneProvider = new firebase.auth.PhoneAuthProvider();
         phoneProvider
-          .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
-          .then(setVerificationId);
+        .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+        .then(setVerificationId);
+        // navigation.navigate('ForgotPass')
       };
 
       const confirmCode = () => {
@@ -106,19 +106,23 @@ export default Login = ({navigation}) => {
 
         <View style={styles.inputContainer}>
             <View style={styles.input}>
-                <TextInput placeholder='Please enter your email address' 
-                // value={ phone } keyboardType="email-address"
+                <TextInput placeholder='Please enter your phone number' 
+                // onBlurCapture={() => setInputFocused(true)}
+                // value={ +91 } 
+                // keyboardType="email-address"
                 // onChangeText={text => setPhone(text)} 
                 // autoCapitalize="none"
                 onChangeText={setPhoneNumber}
+                // onFocus="document.getElementsByClassName('footerW2').style.display='none'"
                 keyboardType="phone-pad"
                 autoCompleteType="tel"
                 // keyboardType='number-pad' 
-                ></TextInput>
+                >+91</TextInput>
             </View>
 
             <View style={styles.input}>
-                <TextInput placeholder='Please enter your password'
+                <TextInput placeholder='Please enter OTP'
+                // onFocus={() => setInputFocused(true)}
                 // value={ password } 
                 // onChangeText={text => setPassword(text)} 
                 // secureTextEntry 
@@ -129,9 +133,9 @@ export default Login = ({navigation}) => {
             </View>
         </View>
 
-        <View style={styles.forgotText} >
+        {/* <View style={styles.forgotText} >
             <Text onPress={() => navigation.navigate('ForgotPass')}>Forgot password?</Text>
-        </View>
+        </View> */}
 
         {/* <TouchableOpacity style={styles.loginBtn} 
         // onPress={() => navigation.navigate('Home')}
@@ -161,11 +165,12 @@ export default Login = ({navigation}) => {
         </TouchableOpacity>
         
             <View style={styles.footerW2}>
-            <Text>Don't have an account?</Text>
+            {/* <Text>{inputFocused ? null : "Didn't recieve code?"}</Text> */}
+            <Text>Didn't recieve code?</Text>
             <Text style={styles.regText} 
-            onPress={() => navigation.navigate('Register')}
+            onPress={sendVerification}
             >
-            Register now.</Text>
+            Resend.</Text>
             </View>
         </SafeAreaView>
         // </KeyboardAvoidingView>

@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useState, useRef, useEffect } from 'react';
 
+// Appearance.set({ colorScheme: 'light' });
 
 import Home from './components/Home'
 import Login from './components/Login';

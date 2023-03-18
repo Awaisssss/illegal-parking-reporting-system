@@ -11,7 +11,7 @@ import firebase from 'firebase/compat/app';
 import { StatusBar } from 'expo-status-bar';
 import { auth, firebaseConfig } from '../firebase';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, setDoc, doc } from 'firebase/firestore';
+import { getFirestore, setDoc, doc, QuerySnapshot } from 'firebase/firestore';
 import {getAuth} from 'firebase/auth'
 // import firebase from "firebase/compat/app";
 // import * as firebase from "firebase/compact/app";
@@ -24,6 +24,7 @@ import storage from '@react-native-firebase/storage';
 import imagePlaceholder from '../assets/img/imagePlaceholder.jpg'
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { ActivityIndicator } from 'react-native-web';
+import { updateDoc } from "firebase/firestore";
 
 export default MakeReport = ({navigation, photo, setPhoto}) => {
     // let imgSrc = '../assets/img/imagePlaceholder.jpg'
@@ -120,6 +121,9 @@ export default MakeReport = ({navigation, photo, setPhoto}) => {
                 console.log("No such document!");
         } 
     }
+
+
+    
     // const [photo, setPhoto] = useState();
     const reportRef = firebase.firestore().collection('reports');
     const [addData, setAddData] = useState('');
@@ -129,9 +133,21 @@ export default MakeReport = ({navigation, photo, setPhoto}) => {
     const [location, setLocation] = useState('');
     const [numPlate, setNumPlate] = useState('');
     const [description, setDescription] = useState('');
-
+    const [profilePoints, setProfilePoints] = useState()
     const [uploading, setUploading] = useState(false);
 
+    const addPoints = async () => {
+        const docRef = doc(db, "users", userId);
+        const docSnap = await getDoc(docRef);
+        console.log('hu: ' + JSON.stringify(docSnap.data()))
+
+        await updateDoc(docRef, {
+            points: firebase.firestore.FieldValue.increment(5)
+// })
+        // points: 5
+        });
+    }
+    // addPoints();
 
     ///
     // var url
@@ -241,13 +257,14 @@ export default MakeReport = ({navigation, photo, setPhoto}) => {
                             numPlate,
                             description,
                             status,
+                            points: 5,
                         };
                     reportRef
                     .add(data)
                     .then(() => {
                         // console.log('1')
                         // console.log('2')
-            
+                        addPoints()
                         setLocation(undefined),setNumPlate(undefined),setDescription(undefined), setPhoto(undefined);
                             console.log('report submitted!')
                             // console.log('dsvnasdn', photo)

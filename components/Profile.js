@@ -11,7 +11,7 @@ import {getAuth} from 'firebase/auth'
 import { doc } from 'firebase/firestore';
 import { getDoc } from 'firebase/firestore';
 import { app, db } from '../firebase'
- 
+import firebase from 'firebase/compat/app'; 
 
 
 export default Profile = ({navigation}) => {
@@ -19,21 +19,94 @@ export default Profile = ({navigation}) => {
     const auth = getAuth();
     const user = auth.currentUser;
     let userId = user.uid;
+    const [count, setCount] = useState()
+    const [totalPoints, SetTotalPoints] = useState()
+    // const [profilePoints, setProfilePoints] = useState()
+    //
+        useEffect(() => {
+        console.log("top uid " + userId);
+        firebase.firestore().collection('reports')
+        .where('userId', '==', userId)
+        .get()
+        .then(querySnapshot => {
+    // Process the query results here
+            const count = querySnapshot.size;
+            setCount(count)
+            console.log(`Number of documents: ${count}`);
+            // querySnapshot.forEach(documentSnapshot => {
+                // console.log('hi');
+                // const totalPoints = querySnapshot.docs.reduce((acc, doc) => {
+                //     const points = doc.data().points || 0; // handle missing points field
+                //     return acc + points;
+                    
+                //   }, 0);
+                  //
+                //   console.log("userdata " + JSON.stringify(documentSnapshot.data()));
+                //   SetTotalPoints(totalPoints)
+                //   console.log(`Total points: ${totalPoints}`);
+                // });
+            });
+}, []);
+
+    //
+    // getUserReports();
+    const [UserReports, setUserReports] = useState([])
+    const reportsRef = firebase.firestore().collection('reports').where('userId', '==', userId)
+    // const getUserReports = async () => {
+    useEffect(() => {
+        reportsRef
+        .onSnapshot(
+            querySnapshot => {
+                // const UserReports = []
+                querySnapshot.forEach((doc) => {
+                    const {description, userId } = doc.data()
+                    
+                    UserReports.push({
+                        id: doc.id,
+                        description,
+                        userId,
+                    })
+                        setUserReports(UserReports)
+                    })
+                    console.log('hamamama ' + JSON.stringify(UserReports));
+            }
+            )
+        }, [])
+    // };
+    //
     let [userData, setUserData] = useState({});
     
+    const [userPoints, setUserPoints] = useState('');
+
     const getUserData = async () => {
         const docRef = doc(db, "users", userId);
         const docSnap = await getDoc(docRef);
-        setUserData(docSnap.data())
+        setUserPoints(docSnap.data().points);
+        console.log(userPoints);
 
         if (docSnap.exists()) {
                 // console.log("Document data in Profile:", docSnap.data());
             
             } else {
               // doc.data() will be undefined in this case
-                console.log("No such document!");
+                // console.log("No such document!");
+                console.log("current user's uid: " + user.uid);
         } 
     }
+    //
+    // const objectsRef = db.collection('objects');
+    // objectsRef.get().then((querySnapshot) => {
+    
+    //   // calculate total points
+    //   const totalPoints = querySnapshot.docs.reduce((acc, doc) => {
+    //     const { points } = doc.data();
+    //     return acc + points;
+    //   }, 0);
+    
+    //   // log total points
+    //   console.log(`Total points: ${totalPoints}`);
+    // })
+    //
 
     useEffect(() => {
         getUserData();
@@ -50,7 +123,7 @@ export default Profile = ({navigation}) => {
 
     return (
         <SafeAreaView style={styles.container}>
-        <View style={styles.headerContainer}>
+        <View style={styles.headerWrapper}>
                 <TouchableOpacity style={styles.backIconContainer} onPress={() => navigation.navigate('Home')}>
                     <MaterialIcons name='arrow-back-ios' size={18}/>
                 </TouchableOpacity>
@@ -58,26 +131,26 @@ export default Profile = ({navigation}) => {
                 <StatusBar style='dark'/>
         </View>
 
-        <View style={styles.profileContainer}>
-            <FontAwesome5 style={styles.userLogo} name='user-circle' color={'white'} size={80} />
-            <View style={styles.textContainer}>
+        {/* <View style={styles.profileContainer}> */}
+            {/* <FontAwesome5 style={styles.userLogo} name='user-circle' color={'white'} size={80} /> */}
+            {/* <View style={styles.textContainer}> */}
                 {/* <Text style={styles.text1}>{userData.firstName} {userData.lastName}</Text> */}
                 {/* <Text style={styles.text2}>{userData.email}</Text> */}
-            </View>
-            <MaterialIcons name='edit' size={26}  color={'white'} onPress={() => navigation.navigate('UpdateProfile')}/>
-        </View>
+            {/* </View> */}
+            {/* <MaterialIcons name='edit' size={26}  color={'white'} onPress={() => navigation.navigate('UpdateProfile')}/> */}
+        {/* </View> */}
 
         <View style={styles.infoContainer}>
         <View style={styles.leftInfo}>
             <Text style={styles.text}>Total Reports</Text>
             <View style={styles.leftCircle}>
-                <Text style={styles.text}>0</Text>
+                <Text style={styles.text}>{count}</Text>
             </View>
         </View>
         <View style={styles.rightInfo}>
             <Text style={styles.text}>Total Rewards</Text>
             <View style={styles.rightCircle}>
-                <Text style={styles.text}>0</Text>
+                <Text style={styles.text}>{userPoints}</Text>
             </View>
         </View>
         </View>
@@ -94,7 +167,17 @@ export default Profile = ({navigation}) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: '5%'
+        // paddingTop: '5%'
+    },
+    headerWrapper: {
+        paddingTop: 40,
+        paddingHorizontal: 30,
+        paddingBottom: 22,
+        flexDirection: 'row',
+        // justifyContent: 'center',
+        backgroundColor: '#5570F1',
+        borderBottomEndRadius: 20,
+        borderBottomStartRadius: 20,
     },
     headerContainer: {
         flexDirection: 'row',

@@ -15,6 +15,7 @@ export default Login = ({navigation}) => {
     // const [phone, setPhone] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('')
+    const [points, setPoints] = useState('')
     const [code, setCode] = useState();
     const [verificationId, setVerificationId] = useState(null);
     const recaptchaVerifier = useRef(null);
@@ -24,7 +25,7 @@ export default Login = ({navigation}) => {
         const unsubscribe = auth.onAuthStateChanged(user => {
         if (user) {
             navigation.replace("Home")
-        }
+        } 
         })
     
         return unsubscribe
@@ -84,9 +85,38 @@ export default Login = ({navigation}) => {
         firebase
           .auth()
           .signInWithCredential(credential)
-          .then((result) => {
+          .then((response) => {
             // Do something with the results here
-            console.log(result);
+            console.log('this is result: ' + JSON.stringify(response));
+            const uid = response.user.uid
+            const data = {
+                id: uid,
+                phoneNumber: response.user.phoneNumber,
+                points,
+            }
+                const usersRef = firebase.firestore().collection('users')
+                usersRef
+                    .doc(uid)
+                    .set(data)
+                    .then(() => {
+                        console.log('userCreated')
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    })    
+                    //             .get()
+        //             .then(firestoreDocument => {
+        //                 if (!firestoreDocument.exists) {
+        //                     alert("User does not exist anymore.")
+        //                     return;
+        //                 }
+        //                 const user = firestoreDocument.data()
+        //                 // navigation.navigate('login')
+        //                 // navigation.navigate('Home', {user})
+        //             })
+        //             .catch(error => {
+        //                 alert(error)
+        //             });
           });
       }
 

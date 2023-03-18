@@ -15,6 +15,7 @@ import MakeReport from './components/MakeReport';
 import Profile from './components/Profile';
 import CamScreen from './components/CamScreen';
 import UpdateProfile from './components/UpdateProfile';
+import Reward from './components/Reward'
 // import OTP from './components/OTP';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -74,7 +75,12 @@ export default function App() {
             },
           headerShown: false,
         }} />
-        
+        <Stack.Screen name="Reward" component={Reward} options={{ cardStyle: {
+                backgroundColor: 'white',
+                opacity: 1,
+            },
+          headerShown: false,
+        }} />
         <Stack.Screen name="MakeReport" options={{ cardStyle: {
                 backgroundColor: 'white',
                 opacity: 1,

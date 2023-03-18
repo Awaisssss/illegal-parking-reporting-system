@@ -128,7 +128,7 @@ export default Home = ({navigation}) => {
  
             <View style={styles.footerWrapper}>
                 <View>
-                    <Entypo style={styles.walletLogo} name='wallet' color={'white'} size={60} />
+                    <Entypo style={styles.walletLogo} name='wallet' color={'white'} size={60} onPress={() => navigation.navigate('Reward')} />
                 </View>
 
                 <View style={styles.cameraContainer}  >

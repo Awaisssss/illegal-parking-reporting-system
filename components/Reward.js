@@ -1,5 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react';
 import { Text,FlatList, StyleSheet, View, SafeAreaView, Image, TextInput, Alert, ScrollView, Button, ActivityIndicator } from 'react-native';
+import { Clipboard } from '@react-native-community/clipboard';
 import colors from '../assets/colors';
 import { TouchableOpacity } from 'react-native';
 import { auth } from '../firebase';
@@ -39,6 +40,7 @@ export default Reward = ({navigation}) => {
       };
 
       const renderCoupons = () => {
+
         if (activeButton === 'allCoupons') {
           return (
             <View style={styles.View} >
@@ -52,14 +54,14 @@ export default Reward = ({navigation}) => {
                         <View style={styles.couponContainer}>
                         
                         <View style={styles.couponLeft}>
-                        <Image style={styles.image} source={{ uri: item.image }} />
+                        <Image style={styles.image} source={{ uri: item.couponImage }} />
                 </View>
                 <View style={styles.couponRight}>
                 {/* {coupons.map(item => ( */}
                 {/* <Text style={styles.couponCompany} key={item.id}>{item.companyName}</Text> */}
                 <Text style={styles.couponCompany} >{item.companyName}</Text>
                 {/* ))} */}
-                <Text style={styles.couponOffer}>{item.description}</Text>
+                <Text style={styles.couponOffer}>{item.couponDescription}</Text>
                 <TouchableOpacity style={[styles.redeemBtn]} >
                 <Text style={styles.redeemText}>
                     {item.couponPoints} points
@@ -76,31 +78,32 @@ export default Reward = ({navigation}) => {
             </View>
           );
         } else {
-          return (
+            return (
             <View style={styles.View} >
                     <ScrollView>
 
                 {isLoading ? (<ActivityIndicator size='large' color='#5570F1'/>) : 
                 (
                     <View style={styles.bigCouponContainer}>
-                    {redeemedCoupons.map((item, index) => (
-                        <View key={index}> 
+                    {redeemedCoupons.map((item) => (
+                        <View key={item.id}> 
                         <View style={styles.couponContainer}>
                         
                         <View style={styles.couponLeft}>
-                        <Image style={styles.image} source={{ uri: item.image }} />
+                        <Image style={styles.image} source={{ uri: item.couponImage }} />
                 </View>
                 <View style={styles.couponRight}>
                 {/* {coupons.map(item => ( */}
                 {/* <Text style={styles.couponCompany} key={item.id}>{item.companyName}</Text> */}
                 <Text style={styles.couponCompany} >{item.companyName}</Text>
                 {/* ))} */}
-                <Text style={styles.couponOffer}>{item.description}</Text>
-                <TouchableOpacity style={[styles.redeemBtn]} >
-                <Text style={styles.redeemText}>
-                    {item.couponPoints} points
-                </Text>
-                </TouchableOpacity>
+                <Text style={styles.couponOffer}>{item.couponDescription}</Text>
+                <View style={styles.codeView}>
+                    <Text style={styles.codeText}>{item.couponCode}</Text>
+                    <TouchableOpacity style={styles.copyTouch} >
+                    <MaterialIcons name='content-copy' color='grey' size={18}/>
+                    </TouchableOpacity>
+                </View>
                 </View>
             </View>
                 </View> 
@@ -132,7 +135,7 @@ export default Reward = ({navigation}) => {
             unsubscribe();
         };
     }, []);
-    console.log('psafdpasmdfsnd poinsansda: ', profilePoints );
+    // console.log('psafdpasmdfsnd poinsansda: ', profilePoints );
 
     const auth = getAuth();
     const user = auth.currentUser;
@@ -142,18 +145,18 @@ export default Reward = ({navigation}) => {
         const fetchAllCoupons = async() => {
             try {
                     const allCouponsList = [];
-                    await firebase.firestore().collection('coupons').where('redeemable', '==', true)
+                    await firebase.firestore().collection('users').doc(user.uid).collection('coupons').where('isRedeemable', '==', true)
                     .get()
                     .then((querySnapshot) => {
                         // console.log('total: ' + querySnapshot.size);
                         querySnapshot.forEach(doc => {
-                        const {companyName, couponPoints, image, description} = doc.data();
+                        const {companyName, couponPoints, couponDescription, couponImage} = doc.data();
                         allCouponsList.push({
                             id: doc.id,
                             companyName,
                             couponPoints,
-                            image,
-                            description,
+                            couponImage,
+                            couponDescription,
                         })
                     })
                     
@@ -162,7 +165,7 @@ export default Reward = ({navigation}) => {
                     setAllCoupons(allCouponsList);
                     setLoading(false);
 
-                // console.log('all coupppps: ', allCouponsList);
+                console.log('all coupppps: ', allCouponsList);
                 }
                 catch(e) {
                     console.log(e)
@@ -175,18 +178,19 @@ export default Reward = ({navigation}) => {
             const fetchRedeemedCoupons = async() => {
                 try {
                         const redeemedCouponslist = [];
-                        await firebase.firestore().collection('coupons').where('redeemable', '==', false)
+                        await firebase.firestore().collection('users').doc(user.uid).collection('coupons').where('isRedeemable', '==', false)
                         .get()
                         .then((querySnapshot) => {
                             // console.log('total: ' + querySnapshot.size);
                             querySnapshot.forEach(doc => {
-                            const {companyName, couponPoints, image, description} = doc.data();
+                            const {companyName, couponPoints, couponImage, couponDescription, couponCode} = doc.data();
                             redeemedCouponslist.push({
                                 id: doc.id,
                                 companyName,
                                 couponPoints,
-                                image,
-                                description,
+                                couponImage,
+                                couponDescription,
+                                couponCode
                             })
                         })
                         
@@ -237,6 +241,32 @@ export default Reward = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+    copyTouch: {
+        // backgroundColor: colors.blue,
+        justifyContent: 'center',
+        // alignItems: 'center',
+        height: 44,
+        width: 40,
+    },
+    codeText: {
+        fontSize: 16,
+        color: 'grey',
+        borderWidth: 2,
+        alignSelf: 'center',
+        paddingHorizontal: 5,
+        borderRadius: 8,
+        paddingVertical: 2,
+        justifyContent: 'center',
+        borderColor: 'grey',
+        marginRight: 3,
+        letterSpacing: 3,
+    },
+    codeView: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+    },
     tabs: {
         // flex: 1,
         justifyContent: 'space-evenly',

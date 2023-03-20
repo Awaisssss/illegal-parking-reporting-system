@@ -8,6 +8,12 @@ import "firebase/compat/firestore";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { StatusBar } from 'expo-status-bar';
 import { async } from '@firebase/util';
+import {getAuth} from 'firebase/auth'
+import { doc } from 'firebase/firestore';
+import { app, db } from '../firebase'
+import { getDoc } from 'firebase/firestore';
+
+
 // import { FlatList } from 'react-native-web';
 // import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
@@ -18,91 +24,30 @@ export default Reward = ({navigation}) => {
     // const [isRedeemable, setIsRedeemable] = useState(false)
     // let isRedeemable = true;
 
-    const [coupons, setCoupons] = useState([])
+    const [allCoupons, setAllCoupons] = useState([])
+    const [redeemedCoupons, setRedeemedCoupons] = useState([])
     const [isLoading, setLoading] = useState(true);
+    const [activeButton, setActiveButton] = useState('allCoupons');
     const reportsRef = firebase.firestore().collection('coupons')
-    // const getUserReports = async () => {
-    // useEffect(() => {
-    //     reportsRef
-    //     .onSnapshot(
-    //         querySnapshot => {
-    //             // const UserReports = []
-    //             querySnapshot.forEach((doc) => {
-    //                 const {description, couponPoints, image, companyName, } = doc.data()
-                    
-    //                 coupons.push({
-    //                     companyName,
-    //                     couponPoints,
-    //                     description,
-    //                     image,
-    //                 })
-    //                     setCoupons(coupons)
-    //                 })
-    //                 console.log('coupons: ' + JSON.stringify(coupons));
-    //                 // console.log('typecoupons: ' + typeof(coupons));
+  
+    const allCouponsPress = () => {
+        setActiveButton('allCoupons'); 
+    };
 
-    //         }
-    //         )
-    //     }, [])
-    
-    useEffect(() => {
-        const fetchCoupons = async() => {
-            try {
-                    const list = [];
-                    await firebase.firestore().collection('coupons')
-                    .get()
-                    .then((querySnapshot) => {
-                        // console.log('total: ' + querySnapshot.size);
-                        querySnapshot.forEach(doc => {
-                        const {companyName, couponPoints, image, description} = doc.data();
-                        list.push({
-                            id: doc.id,
-                            companyName,
-                            couponPoints,
-                            image,
-                            description,
-                        })
-                    })
-                    
-                })
-                
-                    setCoupons(list);
-                    setLoading(false);
+      const redeemedCouponsPress = () => {
+        setActiveButton('redeemedCoupons'); 
+      };
 
-                console.log('coupppps: ', list);
-                }
-                catch(e) {
-                    console.log(e)
-                }
-            }
-            fetchCoupons();
-        }, [])
-        
-        return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.headerWrapper}>
-                <TouchableOpacity style={styles.backIconContainer} onPress={() => navigation.navigate('Home')}>
-                    <MaterialIcons name='arrow-back-ios' size={18}/>
-                </TouchableOpacity>
-                <Text style={styles.detailText}>Rewards</Text>
-                <StatusBar style='dark'/>
-            </View> 
+      const renderCoupons = () => {
+        if (activeButton === 'allCoupons') {
+          return (
+            <View style={styles.View} >
+                    <ScrollView>
 
-            <View style={styles.balanceView}>
-                <Text style={styles.balanceText}>
-                    YOUR BALANCE
-                </Text>
-                <Text style={styles.balancePoints}>
-                    200  
-                    <Text style={styles.pointsText}> points</Text>
-                </Text>
-            </View>
-
-                <View style={styles.View} >
                 {isLoading ? (<ActivityIndicator size='large' color='#5570F1'/>) : 
                 (
-                        <View style={styles.bigCouponContainer}>
-                    {coupons.map((item, index) => (
+                    <View style={styles.bigCouponContainer}>
+                    {allCoupons.map((item, index) => (
                         <View key={index}> 
                         <View style={styles.couponContainer}>
                         
@@ -126,14 +71,188 @@ export default Reward = ({navigation}) => {
                 ))}
             </View>
                 )
-                            }
-</View>
+            }
+            </ScrollView>
+            </View>
+          );
+        } else {
+          return (
+            <View style={styles.View} >
+                    <ScrollView>
+
+                {isLoading ? (<ActivityIndicator size='large' color='#5570F1'/>) : 
+                (
+                    <View style={styles.bigCouponContainer}>
+                    {redeemedCoupons.map((item, index) => (
+                        <View key={index}> 
+                        <View style={styles.couponContainer}>
+                        
+                        <View style={styles.couponLeft}>
+                        <Image style={styles.image} source={{ uri: item.image }} />
+                </View>
+                <View style={styles.couponRight}>
+                {/* {coupons.map(item => ( */}
+                {/* <Text style={styles.couponCompany} key={item.id}>{item.companyName}</Text> */}
+                <Text style={styles.couponCompany} >{item.companyName}</Text>
+                {/* ))} */}
+                <Text style={styles.couponOffer}>{item.description}</Text>
+                <TouchableOpacity style={[styles.redeemBtn]} >
+                <Text style={styles.redeemText}>
+                    {item.couponPoints} points
+                </Text>
+                </TouchableOpacity>
+                </View>
+            </View>
+                </View> 
+                ))}
+            </View>
+                )
+            }
+            </ScrollView>
+            </View>
+          );
+        }
+      };
+
+      const [profilePoints, setProfilePoints] = useState(null);
+      useEffect(() => {
+        const unsubscribe = firebase
+          .firestore()
+          .collection('users')
+          .doc(firebase.auth().currentUser.uid)
+          .onSnapshot((doc) => {
+            if (doc.exists) {
+              const userPoints = doc.data().points;
+              console.log('psafdpasmdfsnd: ', userPoints );
+              setProfilePoints(userPoints);
+            }
+            
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+    console.log('psafdpasmdfsnd poinsansda: ', profilePoints );
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+    let userId = user.uid;
+    
+    useEffect(() => {
+        const fetchAllCoupons = async() => {
+            try {
+                    const allCouponsList = [];
+                    await firebase.firestore().collection('coupons').where('redeemable', '==', true)
+                    .get()
+                    .then((querySnapshot) => {
+                        // console.log('total: ' + querySnapshot.size);
+                        querySnapshot.forEach(doc => {
+                        const {companyName, couponPoints, image, description} = doc.data();
+                        allCouponsList.push({
+                            id: doc.id,
+                            companyName,
+                            couponPoints,
+                            image,
+                            description,
+                        })
+                    })
+                    
+                })
+                
+                    setAllCoupons(allCouponsList);
+                    setLoading(false);
+
+                // console.log('all coupppps: ', allCouponsList);
+                }
+                catch(e) {
+                    console.log(e)
+                }
+            }
+            fetchAllCoupons();
+        }, [allCoupons])
+
+        useEffect(() => {
+            const fetchRedeemedCoupons = async() => {
+                try {
+                        const redeemedCouponslist = [];
+                        await firebase.firestore().collection('coupons').where('redeemable', '==', false)
+                        .get()
+                        .then((querySnapshot) => {
+                            // console.log('total: ' + querySnapshot.size);
+                            querySnapshot.forEach(doc => {
+                            const {companyName, couponPoints, image, description} = doc.data();
+                            redeemedCouponslist.push({
+                                id: doc.id,
+                                companyName,
+                                couponPoints,
+                                image,
+                                description,
+                            })
+                        })
+                        
+                    })
+                    
+                        setRedeemedCoupons(redeemedCouponslist);
+                        setLoading(false);
+    
+                    // console.log('redeemed coupppps: ', redeemedCouponslist);
+                    }
+                    catch(e) {
+                        console.log(e)
+                    }
+                }
+                fetchRedeemedCoupons();
+            }, [redeemedCoupons])
+        
+        return (
+        <SafeAreaView style={styles.container}>
+            <View style={styles.headerWrapper}>
+                <TouchableOpacity style={styles.backIconContainer} onPress={() => navigation.navigate('Home')}>
+                    <MaterialIcons name='arrow-back-ios' size={18}/>
+                </TouchableOpacity>
+                <Text style={styles.detailText}>Rewards</Text>
+                <StatusBar style='dark'/>
+            </View> 
+
+            <View style={styles.balanceView}>
+                <Text style={styles.balanceText}>
+                    YOUR BALANCE
+                </Text>
+                <Text style={styles.balancePoints}>
+                    {profilePoints}  
+                    <Text style={styles.pointsText}> points</Text>
+                </Text>
+            </View>
+
+            <View style={styles.tabs}>
+                <TouchableOpacity><Text style={[styles.tabsText, activeButton === 'allCoupons' && styles.activeTabsButton]} onPress={allCouponsPress}>All coupons</Text></TouchableOpacity>
+                <Text style={styles.tabsText}>|</Text>
+                <TouchableOpacity><Text style={[styles.tabsText, activeButton === 'redeemedCoupons' && styles.activeTabsButton]} onPress={redeemedCouponsPress}>Redeemed coupons</Text></TouchableOpacity>
+            </View>
+
+                {renderCoupons()}
 
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    tabs: {
+        // flex: 1,
+        justifyContent: 'space-evenly',
+        paddingVertical: 4,
+        flexDirection: 'row',
+    },
+    tabsText: {
+        letterSpacing: 1.5,
+        fontSize: 20,
+        fontWeight: '500',
+        // color: colors.blue,
+        color: 'grey',
+    },
+    activeTabsButton: {
+        color: colors.blue,
+    },
     View:{
         flex: 1,
         flexDirection: 'column',

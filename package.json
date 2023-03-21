@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@expo/webpack-config": "^0.17.0",
+    "@react-native-community/clipboard": "^1.5.1",
     "@react-native-community/google-signin": "^5.0.0",
     "@react-native-firebase/app": "^15.7.0",
     "@react-native-firebase/firestore": "^15.7.0",

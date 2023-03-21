@@ -13,10 +13,12 @@ import "firebase/compat/firestore";
 import { useScrollToTop } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import {getAuth} from 'firebase/auth'
-import { doc } from 'firebase/firestore';
+import { doc, QuerySnapshot } from 'firebase/firestore';
 import { getDoc } from 'firebase/firestore';
 // import storage from '@react-native-firebase/storage';
 // import { getAuth, onAuthStateChanged } from "firebase/auth";
+// import firebase from 'firebase/app';
+// import 'firebase/firestore';
 
 
 Feather.loadFont();
@@ -34,7 +36,56 @@ export default Home = ({navigation}) => {
         const user = auth.currentUser;
         let userId = user.uid;
         let [userData, setUserData] = useState({});
-        
+
+        const getCData = async () => {
+            const db = firebase.firestore();
+            const usersCollection = db.collection('users');
+            const usersDocRef = usersCollection.doc(userId);
+            const couponsCollection = usersDocRef.collection('coupons');
+            const couponsRef = firebase.firestore().collection('users').doc(user.uid).collection('coupons')
+            console.log('hi bhai');
+            couponsRef.get().then((querySnapshot) => {
+                if (!querySnapshot.exists) {
+                    console.log('no exis');
+                    couponsCollection.doc('airtel').set({
+                        companyName: 'AIRTEL',
+                        couponPoints: 30,
+                        couponDescription: '30rs off on next rechanrge',
+                        couponCode: 'AIRTEL30',
+                        couponImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Bharti_Airtel_Logo.svg/2032px-Bharti_Airtel_Logo.svg.png',
+                        isRedeemable: true, 
+                    }, { mergeFields: [] })
+                    couponsCollection.doc('macdonalds').set({
+                        companyName: 'MACDONALDS',
+                        couponPoints: 40,
+                        couponDescription: 'BUY 1 GET 1',
+                        couponCode: 'MAC1FREE',
+                        couponImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/1200px-McDonald%27s_Golden_Arches.svg.png',
+                        isRedeemable: true, 
+                    }, { mergeFields: [] })
+                    couponsCollection.doc('amazon').set({
+                        companyName: 'AMAZON',
+                        couponPoints: 50,
+                        couponDescription: 'FLAT 10RS ON MONEY TRANSFER',
+                        couponCode: 'FLAT10',
+                        couponImage: 'https://static.vecteezy.com/system/resources/previews/014/018/561/original/amazon-logo-on-transparent-background-free-vector.jpg',
+                        isRedeemable: true, 
+                    }, { mergeFields: [] })
+                    couponsCollection.doc('starbuck').set({
+                        companyName: 'STARBUCK',
+                        couponPoints: 50,
+                        couponDescription: 'BUY 1 GET 1',
+                        couponCode: 'BUY1GET',
+                        couponImage: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Starbucks_Corporation_Logo_2011.svg/800px-Starbucks_Corporation_Logo_2011.svg.png',
+                        isRedeemable: true, 
+                    }, { mergeFields: [] })
+                }else{
+                    console.log('exis');
+                }})
+        }
+        getCData();        
+
+
         const getUserData = async () => {
             const docRef = doc(db, "users", userId);
             const docSnap = await getDoc(docRef);

@@ -76,7 +76,7 @@ export default Profile = ({navigation}) => {
     //
     let [userData, setUserData] = useState({});
     
-    const [userPoints, setUserPoints] = useState('');
+    const [userPoints, setUserPoints] = useState(0);
 
     const getUserData = async () => {
         const docRef = doc(db, "users", userId);

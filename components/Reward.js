@@ -12,7 +12,7 @@ import { async } from '@firebase/util';
 import {getAuth} from 'firebase/auth'
 import { doc } from 'firebase/firestore';
 import { app, db } from '../firebase'
-import { getDoc } from 'firebase/firestore';
+import { getDoc, updateDoc } from 'firebase/firestore';
 
 
 // import { FlatList } from 'react-native-web';
@@ -39,6 +39,51 @@ export default Reward = ({navigation}) => {
         setActiveButton('redeemedCoupons'); 
       };
 
+    //   const handleIsRedeem = () => {
+    //     const subCollectionRef = firebase.firestore().collection('users').doc(userId).collection('coupons');
+    //     const couponRef = subCollectionRef.doc(Couponid);
+    //     couponRef.update({
+    //         isRedeemable: false
+    //       })
+    //   }
+
+    function handleIsRedeem(couponId, couponPoints) {
+        if (profilePoints >= couponPoints) {
+        firebase
+          .firestore()
+          .collection('users')
+          .doc(userId)
+          .collection('coupons')
+          .doc(couponId.toLowerCase())
+          .update({ isRedeemable: false })
+          .then(() => {
+            // console.log(doc.data());
+            console.log('Coupon redeemed successfully!');
+          })
+          .catch(error => {
+            console.error('Error redeeming coupon: ', error);
+          });
+      }
+    }
+
+      const handleRedeem = (couponPoints) => {
+        const profilePointsRef = doc(db, "users", userId);
+        // const subCollectionRef = firebase.firestore().collection('users').doc(userId).collection('coupons');
+        // const couponRef = subCollectionRef.doc(couponPoints);
+        if (profilePoints >= couponPoints) {
+            setProfilePoints(profilePoints - couponPoints);
+            updateDoc(profilePointsRef, {
+                points: profilePoints - couponPoints
+            });
+        //   updateDoc(couponRef, {
+        //     isRedeemable: false
+        //   });
+          alert('Coupon redeemed successfully!');
+        } else {
+          alert('Insufficient points to redeem this coupon!');
+        }
+      };
+
       const renderCoupons = () => {
 
         if (activeButton === 'allCoupons') {
@@ -62,7 +107,11 @@ export default Reward = ({navigation}) => {
                 <Text style={styles.couponCompany} >{item.companyName}</Text>
                 {/* ))} */}
                 <Text style={styles.couponOffer}>{item.couponDescription}</Text>
-                <TouchableOpacity style={[styles.redeemBtn]} >
+                <TouchableOpacity style={[styles.redeemBtn]} onPress={() => {
+                    handleRedeem(item.couponPoints);
+                     handleIsRedeem(item.companyName, item.couponPoints)
+                }} 
+                     >
                 <Text style={styles.redeemText}>
                     {item.couponPoints} points
                 </Text>
@@ -117,7 +166,7 @@ export default Reward = ({navigation}) => {
         }
       };
 
-      const [profilePoints, setProfilePoints] = useState(null);
+      const [profilePoints, setProfilePoints] = useState(0);
       useEffect(() => {
         const unsubscribe = firebase
           .firestore()

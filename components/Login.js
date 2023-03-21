@@ -8,9 +8,14 @@ import firebase from 'firebase/compat/app';
 
 import {useRef} from 'react';
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
+import { doc } from 'firebase/firestore';
 
 
 export default Login = ({navigation}) => {
+
+    const user = auth.currentUser;
+        // let userId = user.uid;
+        // console.log('fasf: ', userId);
 
     // const [phone, setPhone] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -30,6 +35,33 @@ export default Login = ({navigation}) => {
     
         return unsubscribe
     }, [])
+
+    // const user = auth.currentUser;
+    // let userId = user.uid;
+    // console.log(userId);
+
+//   useEffect(() => {
+//     const db = firebase.firestore();
+//     const userRef = db.collection('users').doc(userId);
+
+//     userRef.collection('coupons').get().then((querySnapshot) => {
+//       if (querySnapshot.empty) {
+//         userRef.collection('coupons').add({
+//           coupon1: {
+//             isRedeemable: true,
+//             couponPoints: 50,
+//             // other coupon details
+//           },
+//           coupon2: {
+//             isRedeemable: true,
+//             couponPoints: 100,
+//             // other coupon details
+//           },
+//           // add more coupons as needed
+//         });
+//       }
+//     });
+//   }, [userId]);
 
     // const handleLogin = () => {
     //     auth
@@ -77,6 +109,24 @@ export default Login = ({navigation}) => {
         // navigation.navigate('ForgotPass')
       };
 
+      const addDoc = () => {
+        const couponsRef = firebase.firestore().collection('users').doc(userId)
+        couponsRef.get().then((querySnapshot) => {
+            if (querySnapshot.size < 0) {
+                couponsCollection.doc(userId).set({
+                    id: userId,
+                    phoneNumber: user.phoneNumber,
+                    couponDescription: '30rs off on next rechanrge',
+                    // couponCode: 'AIRTEL30',
+                    // couponImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Bharti_Airtel_Logo.svg/2032px-Bharti_Airtel_Logo.svg.png',
+                    isRedeemable: true, 
+                })
+            console.log('user in d base');
+            }
+        })
+      }
+    //   addDoc();
+
       const confirmCode = () => {
         const credential = firebase.auth.PhoneAuthProvider.credential(
           verificationId,
@@ -87,36 +137,47 @@ export default Login = ({navigation}) => {
           .signInWithCredential(credential)
           .then((response) => {
             // Do something with the results here
-            console.log('this is result: ' + JSON.stringify(response));
+            // console.log('this is result: ' + JSON.stringify(response));
             const uid = response.user.uid
+            // setUid(uid)
             const data = {
                 id: uid,
                 phoneNumber: response.user.phoneNumber,
-                points,
+                points: 0,
             }
-                const usersRef = firebase.firestore().collection('users')
-                usersRef
-                    .doc(uid)
-                    .set(data)
-                    .then(() => {
-                        console.log('userCreated')
+            firebase.firestore().collection('users').doc(uid)
+            .get()
+            .then((doc) => {
+                if (doc.size < 0) {
+                    // if (!doc.exists() || !doc.data().points) {
+                    firebase.firestore().collection('users')
+                      .doc(uid)
+                      .set( data , { mergeFields: [] })
+
+                      .then(() => {
+                        console.log('Document created successfully');
+                      })
+                      .catch((error) => {
+                        console.error('Error updating document: ', error);
+                      });
+                  } else {
+                    console.log('Points field already exists');
+                  }
                     })
                     .catch((error) => {
-                        console.log(error)
-                    })    
-                    //             .get()
-        //             .then(firestoreDocument => {
-        //                 if (!firestoreDocument.exists) {
-        //                     alert("User does not exist anymore.")
-        //                     return;
-        //                 }
-        //                 const user = firestoreDocument.data()
-        //                 // navigation.navigate('login')
-        //                 // navigation.navigate('Home', {user})
-        //             })
-        //             .catch(error => {
-        //                 alert(error)
-        //             });
+                        console.error('Error getting document: ', error);
+                    });
+              
+            // })
+            // usersRef
+            //     .doc(uid)
+            //     .create(data)
+            //     .then(() => {
+            //         console.log('userCreated')
+            //     })
+            //     .catch((error) => {
+            //         console.log(error)
+            //     })    
           });
       }
 

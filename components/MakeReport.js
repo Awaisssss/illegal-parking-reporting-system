@@ -107,7 +107,7 @@ export default MakeReport = ({navigation, photo, setPhoto}) => {
         // img = photo.uri
     const auth = getAuth();
     const user = auth.currentUser;
-    // let userId = user.uid;
+    let userId = user.uid;
     
     const getUserData = async () => {
         const docRef = doc(db, "users", userId);

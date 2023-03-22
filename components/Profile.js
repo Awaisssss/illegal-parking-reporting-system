@@ -120,6 +120,41 @@ export default Profile = ({navigation}) => {
         })
         .catch(error => alert(error.message))
     }
+    
+    const [allReports, setAllReports] = useState([])
+    const [isLoading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAllReports = async() => {
+            try {
+                    const allReportsList = [];
+                    await firebase.firestore().collection('reports').where('userId', '==', userId)
+                    .get()
+                    .then((querySnapshot) => {
+                        // console.log('total: ' + querySnapshot.size);
+                        querySnapshot.forEach(doc => {
+                        const {status, fbimage, createdAt} = doc.data();
+                        allReportsList.push({
+                            id: doc.id,
+                            status,
+                            fbimage,
+                            createdAt: doc.createdAt,
+                        })
+                    })
+                    
+                })
+                
+                    setAllReports(allReportsList);
+                    setLoading(false);
+
+                console.log('all reports: ', allReportsList);
+                }
+                catch(e) {
+                    console.log(e)
+                }
+            }
+            fetchAllReports();
+        }, [allReports])
 
     return (
         <SafeAreaView style={styles.container}>
@@ -129,6 +164,10 @@ export default Profile = ({navigation}) => {
                 </TouchableOpacity>
                 <Text style={styles.detailText}>Profile</Text>
                 <StatusBar style='dark'/>
+        </View>
+
+        <View style={styles.userContainer}>
+        <Text style={styles.userText}>Current User: {user.phoneNumber}</Text>
         </View>
 
         {/* <View style={styles.profileContainer}> */}
@@ -144,20 +183,55 @@ export default Profile = ({navigation}) => {
         <View style={styles.leftInfo}>
             <Text style={styles.text}>Total Reports</Text>
             <View style={styles.leftCircle}>
-                <Text style={styles.text}>{count}</Text>
+                <Text style={styles.text}>
+                    <Text style={styles.innerText}>
+                    {count}
+                    </Text>
+                    </Text>
             </View>
         </View>
+        <View style={styles.middleInfo}></View>
         <View style={styles.rightInfo}>
             <Text style={styles.text}>Total Rewards</Text>
             <View style={styles.rightCircle}>
-                <Text style={styles.text}>{userPoints}</Text>
+                <Text style={styles.text}>
+                <Text style={styles.innerText}>
+                    {userPoints}
+                    </Text>
+                    </Text>
             </View>
         </View>
         </View>
 
+        {/* <View style={styles.reportsVIew}>
+            <Text style={styles.yourReports}>Your reports -</Text>
+            <ScrollView>
+
+            <View style={styles.reportsInnerVIew}>
+            {allReports.map((report) => (
+                <View key={report.id}>
+                <View style={styles.reportsVeryInnerVIew} elevation={5}>
+                <Image style={styles.reportImage} source={{uri: report.fbimage}}/>
+                <View style={styles.mainText}>
+                    <Text style={styles.titleText}>Reported on</Text>
+                    <Text style={styles.timeText}>{report.createdAt}</Text>
+                </View>
+                <View style={styles.mainText}>
+                    <Text style={styles.titleText}>Status</Text>
+                    <Text style={styles.statusText}>{report.status}</Text>
+                </View>
+                </View>
+            </View>
+            ))}
+            </View>
+            </ScrollView>
+        </View> */}
+
+        <View style={styles.logoutView}>
         <TouchableOpacity style={styles.loginBtn} onPress={handleSignOut}>
                     <Text style={styles.loginBtntxt}>Logout</Text>
         </TouchableOpacity>
+        </View>
 
         </SafeAreaView>
         
@@ -165,6 +239,106 @@ export default Profile = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
+    mainText:{
+        alignItems: 'center'
+    },
+    titleText: {
+        fontSize: 18,
+        letterSpacing: 2,
+        fontWeight: '600'
+
+    },
+    statusText: {
+        // justifyContent: 'center',
+        fontSize: 18,
+        alignSelf: 'center',
+        paddingVertical: 15,
+        // backgroundColor: 'red'
+        // paddingVertical: 20,
+    },
+
+    timeText: {
+        // justifyContent: 'center',
+        fontSize: 18,
+        alignSelf: 'center',
+        paddingVertical: 15,
+        // backgroundColor: 'red'
+        // paddingVertical: 20,
+    },
+    // imageView: {
+    //     height: 40,
+    //     width: 40,
+    //     backgroundColor: 'yellow',
+    // },
+    yourReports: {
+        fontSize: 26,
+        fontWeight: '700',
+        paddingLeft: 30,
+    },
+    reportsVeryInnerVIew: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        paddingVertical: 5,
+        // paddingVertical: 20,
+        // height: 100,
+        marginVertical: 20,
+        // backgroundColor: 'yellow',
+        shadowColor: "#000000",
+    shadowOpacity: 0.8,
+    // shadowRadius: 2,
+    shadowOffset: {
+      height: 1,
+      width: 2,
+    }
+        
+    },
+    reportImage:{
+        width: 100,
+        resizeMode: 'contain',
+        height: 120,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'pink',
+        borderRadius: 20,
+    },
+    reportsInnerVIew: {
+        // backgroundColor: 'yellow',
+        // flexDirection: 'row',
+        flexDirection: 'column',
+        // paddingVertical: 20, 
+    },
+    reportsVIew: {
+        flex: 1,
+        flexDirection: 'column',
+        // borderWidth: 2,
+        marginTop: 20,
+        // justifyContent: 'space-between',
+        // flexDirection: 'row',
+    },
+    middleInfo: {
+        borderRightWidth: 3,
+        borderColor: 'lightgrey',
+    },
+    innerText: {
+        fontSize: 40,
+        fontWeight: '500',
+    },
+    userText:{
+        fontSize: 22,
+        color: 'white',
+        fontWeight: '600',
+    },
+    userContainer: {
+        // flex: 1,
+        // flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.blue,
+        borderBottomEndRadius: 20,
+        borderBottomStartRadius: 20,
+        paddingBottom: 20,
+
+    },
     container: {
         flex: 1,
         // paddingTop: '5%'
@@ -176,8 +350,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // justifyContent: 'center',
         backgroundColor: '#5570F1',
-        borderBottomEndRadius: 20,
-        borderBottomStartRadius: 20,
+        // borderBottomEndRadius: 20,
+        // borderBottomStartRadius: 20,
     },
     headerContainer: {
         flexDirection: 'row',
@@ -237,36 +411,42 @@ const styles = StyleSheet.create({
     },  
     infoContainer: {
         flexDirection: 'row',
-        paddingVertical: 40,
+        // paddingVertical: 20,
+        paddingTop: 20,
+        justifyContent: 'space-evenly',
+        // backgroundColor: 'yellow',
+
     },
     rightInfo: {
-        paddingLeft: 40,
+        // paddingLeft: 40,
         alignItems: 'center'
     },
     leftInfo: {
-        borderRightWidth: 2,
-        paddingLeft: 50,
-        paddingRight: 40,
+        // paddingLeft: 50,
+        // paddingRight: 40,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     text: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '700',
-        marginTop: 10,
+        marginTop: 5,
     },
     leftCircle: {
-        marginTop: 20,
-        marginBottom: 40,
+        marginTop: 10,
+        marginBottom: 10,
 
     },
     rightCircle: {
-        marginTop: 20,
+        marginTop: 10,
+        marginBottom: 10,
+
     },
     loginBtn: {
         alignItems: 'center',
         height: 45,
         margin: 40,
-        marginTop: 290,
+        // marginTop: 290,
         justifyContent: 'center',
         borderRadius: 8,
         backgroundColor: "#5570f1",
@@ -275,5 +455,12 @@ const styles = StyleSheet.create({
     loginBtntxt: {
         color: 'white',
         fontSize: 20,
+    },
+    logoutView: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        // alignItems: 'flex-end',
+        // marginTop: 20,
+        // backgroundColor: 'red',
     },
 })

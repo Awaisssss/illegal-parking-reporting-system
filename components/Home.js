@@ -37,16 +37,26 @@ export default Home = ({navigation}) => {
         let userId = user.uid;
         let [userData, setUserData] = useState({});
 
+        console.log('hamba: ', user.phoneNumber);
+
+
         const getCData = async () => {
             const db = firebase.firestore();
             const usersCollection = db.collection('users');
+            const usersRef = firebase.firestore().collection('users').doc(userId)
             const usersDocRef = usersCollection.doc(userId);
             const couponsCollection = usersDocRef.collection('coupons');
+            const data = {
+                id: userId,
+                phoneNumber: user.phoneNumber,
+                points: 0,
+            }
             const couponsRef = firebase.firestore().collection('users').doc(user.uid).collection('coupons')
             console.log('hi bhai');
             couponsRef.get().then((querySnapshot) => {
-                if (!querySnapshot.exists) {
-                    console.log('no exis');
+                if (querySnapshot.empty) {
+
+                    console.log('bangya');
                     couponsCollection.doc('airtel').set({
                         companyName: 'AIRTEL',
                         couponPoints: 30,
@@ -54,7 +64,8 @@ export default Home = ({navigation}) => {
                         couponCode: 'AIRTEL30',
                         couponImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Bharti_Airtel_Logo.svg/2032px-Bharti_Airtel_Logo.svg.png',
                         isRedeemable: true, 
-                    }, { mergeFields: [] })
+                    }, { merge: false })
+                // }, { mergeFields: [] })
                     couponsCollection.doc('macdonalds').set({
                         companyName: 'MACDONALDS',
                         couponPoints: 40,
@@ -62,7 +73,7 @@ export default Home = ({navigation}) => {
                         couponCode: 'MAC1FREE',
                         couponImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/1200px-McDonald%27s_Golden_Arches.svg.png',
                         isRedeemable: true, 
-                    }, { mergeFields: [] })
+                    }, { merge: false })
                     couponsCollection.doc('amazon').set({
                         companyName: 'AMAZON',
                         couponPoints: 50,
@@ -70,7 +81,7 @@ export default Home = ({navigation}) => {
                         couponCode: 'FLAT10',
                         couponImage: 'https://static.vecteezy.com/system/resources/previews/014/018/561/original/amazon-logo-on-transparent-background-free-vector.jpg',
                         isRedeemable: true, 
-                    }, { mergeFields: [] })
+                    }, { merge: false })
                     couponsCollection.doc('starbuck').set({
                         companyName: 'STARBUCK',
                         couponPoints: 50,
@@ -78,10 +89,19 @@ export default Home = ({navigation}) => {
                         couponCode: 'BUY1GET',
                         couponImage: 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Starbucks_Corporation_Logo_2011.svg/800px-Starbucks_Corporation_Logo_2011.svg.png',
                         isRedeemable: true, 
-                    }, { mergeFields: [] })
+                    }, { merge: false })
+                    .then(
+                        usersRef.get().then(
+                            firebase.firestore().collection('users')
+                            .doc(userId)
+                      .     set( data , { merge: false })
+
+                        )
+                    )
                 }else{
                     console.log('exis');
-                }})
+                }
+            })
         }
         getCData();        
 

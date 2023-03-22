@@ -145,28 +145,29 @@ export default Login = ({navigation}) => {
                 phoneNumber: response.user.phoneNumber,
                 points: 0,
             }
-            firebase.firestore().collection('users').doc(uid)
-            .get()
-            .then((doc) => {
-                if (doc.size < 0) {
-                    // if (!doc.exists() || !doc.data().points) {
-                    firebase.firestore().collection('users')
-                      .doc(uid)
-                      .set( data , { mergeFields: [] })
+            // const usersRef = firebase.firestore().collection('users').doc(uid)
+            // usersRef.get().then((documentSnapshot) => {
+            //     // if (doc.size < 0) {
+            //         if (documentSnapshot.exists) {
+            //         console.log('already there');
 
-                      .then(() => {
-                        console.log('Document created successfully');
-                      })
-                      .catch((error) => {
-                        console.error('Error updating document: ', error);
-                      });
-                  } else {
-                    console.log('Points field already exists');
-                  }
-                    })
-                    .catch((error) => {
-                        console.error('Error getting document: ', error);
-                    });
+            //         firebase.firestore().collection('users')
+            //           .doc(uid)
+            //           .set( data , { merge: false })
+
+            //           .then(() => {
+            //             console.log('Document created successfully');
+            //           })
+            //           .catch((error) => {
+            //             console.error('Error updating document: ', error);
+            //           });
+            //       } else {
+            //         console.log('damn create it');
+            //       }
+            //         })
+            //         .catch((error) => {
+            //             console.error('Error getting document: ', error);
+            //         });
               
             // })
             // usersRef
